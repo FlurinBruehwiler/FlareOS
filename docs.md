@@ -24,6 +24,8 @@ How Computers Works: https://homepage.cs.uri.edu/faculty/wolfe/book/Readings/Rea
 With int 0x10 you can do other cool stuff, see [here](https://en.wikipedia.org/wiki/INT_10H)
 
 ### Interrupts
+Interrupts are represented by a single number which is an index into the interrupt vector table. This table is located at 0x0, so at the complete beginning of memory. The entry of the table points to an ISR (Interrupt service routine), that actually contains the instructions.
+
 An interrupt can be called via `int 0x10`.
 - `0x10` video interrupt [see](#printing-to-bios-output)
 - `0x13` hard disk and floppy disk [see](#interrupt-0x13)
@@ -64,13 +66,16 @@ Disk Error Doc: https://stanislavs.org/helppc/int_13-1.html
 
 
 ### Registers:
+GP registers, each 16 bits.
+- ax
+- bx
+- cx
+- dx
+
 `ax`: 16 bit register
 `al`: lower 8 bits
 `ah`: hight 8 bits
 
-GP registers:
-ax
-bx
 
 ### Loops
 ```
@@ -173,10 +178,17 @@ There is also the GDT descriptor, that describes the GDT to the CPU. It consists
 `pusha` pushed all registers to the stack
 `popa` pops all registers from the stak
 
+### Assembly directives
+These are not instructions, but directives interpreted by the "compiler" when converting assembly to raw bytes.
+
+test
+
 `db` define byte
 `db "X"` write X to memory (statically at compile time) 
 
 `dw` defines a word (two bytes / 16bits)
+
+`dd` define double word ()
 
 `times` repeats an instruction at compile time
 `times 510 db 0` writes 510 `0` bytesstanislavs
