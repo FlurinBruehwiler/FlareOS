@@ -59,12 +59,27 @@ We could just use jmp but how do we know where to return to? We could store the 
 
 The second problem is, that if we change registers in a function, it has side effects. To solve this, we can use `pusha` and `popa` which puts all the registers on to the stack.
 
+### Strings
+String constants are just memory at a certain address. To define a string we can use: `db 'Hello, World', 0`\
+And so that we later know the address of the first char of the string we can define this below a label:
+
+```
+mystring:
+    db 'Hello, World', 0
+```
+
+We need to be carefull, strings and raw data in general should be defined at a location where we don't accedentaly start executing the code. For example putting it after an infinite loop: `jmp $`
+
 ### Including files
 `%include "file.asm"`
+
+Pastes the code from the other assembly file into this file, at this location.
 
 
 ### Segmentation
 Segmentation means that you can specify an offset to all the data you refer to.
+
+To compute an address the following formula is used: `segment << 4 + address`
 
 Global Memory Offset:
 `[org 0x7c00]` global offset to all memory locations, usefull to offset every memory addres to inside the boot sector, which is stored at `0x7c00`
