@@ -13,9 +13,14 @@ James Molly Tutorial: https://web.archive.org/web/20160412174753/http://www.jame
 
 How Computers Works: https://homepage.cs.uri.edu/faculty/wolfe/book/Readings/Reading04.htm
 
-Assembly:
+## Assembly
 
-Registers:
+### Printing to BIOS output
+- `mov ah, 0x0e` tty mode
+- `mov al, 'H'` character to print into al
+- `int 0x1` trigger interupt
+
+### Registers:
 `ax`: 16 bit register
 `al`: lower 8 bits
 `ah`: hight 8 bits
@@ -24,32 +29,63 @@ GP registers:
 ax
 bx
 
-(Stack grows downwards, towards the bottom)
-`bp`: top of the stack (fake news, [see](https://github.com/cfenollosa/os-tutorial/issues/269))
+### Loops
+```
+mov ax, 0
+
+loop:
+    inc ax
+    cmp ax, 4
+    je endloop
+    jmp loop
+
+endloop:
+
+
+```
+
+### Stack
+We can push and pop 'memory' memory from the stack:\
+`push 'A'`\
+`pop bx` 
+
+(Stack grows downwards, towards the bottom)\
 `sp`: bottom of the stack
 
 Auxiliary register: temporary storage registers (not special)
 
+### Functions
+We could just use jmp but how do we know where to return to? We could store the return value in some register, and jump to there. But it is easier to use the `call` and `ret` instructions.
+
+The second problem is, that if we change registers in a function, it has side effects. To solve this, we can use `pusha` and `popa` which puts all the registers on to the stack.
+
+### Including files
+`%include "file.asm"`
+
+
+### Segmentation
+Segmentation means that you can specify an offset to all the data you refer to.
+
 Global Memory Offset:
 `[org 0x7c00]` global offset to all memory locations, usefull to offset every memory addres to inside the boot sector, which is stored at `0x7c00`
-![[Pasted image 20231223182130.png]]
 
-Instructions:
 
-`int` execute interupt
+### Instructions
+
+`int` execute interupt\
 `int 0x10` 
 
-`mov` move something into a register
+`mov` move something into a register\
 `mov al, "2"` moves the ascii character 2 into al
 
 `jmp` jump to a specific memory location
 
 `je`: jump if equal
 
-`push` push something onto the stack
+`push` push something onto the stack\
 `push 'A'`
 
-`pop` pop something off the stack into a register
+`pop` pop something off the stack into a register\
 `pop` bx
 
 `call` call a 'method', has the advantage over a jmp that one can use `ret`
