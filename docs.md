@@ -16,9 +16,52 @@ How Computers Works: https://homepage.cs.uri.edu/faculty/wolfe/book/Readings/Rea
 ## Assembly
 
 ### Printing to BIOS output
+
 - `mov ah, 0x0e` tty mode
 - `mov al, 'H'` character to print into al
-- `int 0x1` trigger interupt
+- `int 0x10` trigger interupt
+
+With int 0x10 you can do other cool stuff, see [here](https://en.wikipedia.org/wiki/INT_10H)
+
+### Interrupts
+An interrupt can be called via `int 0x10`.
+- `0x10` video interrupt [see](#printing-to-bios-output)
+- `0x13` hard disk and floppy disk [see](#interrupt-0x13)
+
+#### Interrupt 0x13
+https://en.wikipedia.org/wiki/INT_13H
+
+Parameters: 
+| Register | Description            |
+|----------|------------------------|
+| AH       | 02h                    |
+| AL       | Sectors To Read Count  |
+| CH       | Cylinder               |
+| CL       | Sector                 |
+| DH       | Head                   |
+| DL       | Drive                  |
+| ES:BX    | Buffer Address Pointer |
+
+
+
+Results:
+| Register | Description                     |
+|----------|---------------------------------|
+| CF       | Set On Error, Clear If No Error |
+| AH       | Return Code                     |
+| AL       | Actual Sectors Read Count       |
+
+If you are wondering what Cylinder, Sector and Head are: https://en.wikipedia.org/wiki/Cylinder-head-sector (yes, they descript a CD)
+
+https://stanislavs.org/helppc/int_13-2.html (wtf is stanislav.org?????????)
+
+Disk Error Doc: https://stanislavs.org/helppc/int_13-1.html
+
+*Read disk sectors*
+
+
+
+
 
 ### Registers:
 `ax`: 16 bit register
@@ -76,7 +119,7 @@ We need to be carefull, strings and raw data in general should be defined at a l
 Pastes the code from the other assembly file into this file, at this location.
 
 
-### Segmentation
+### Segmentation (real mode)
 Segmentation means that you can specify an offset to all the data you refer to.
 
 To compute an address the following formula is used: `segment << 4 + address`
@@ -84,6 +127,26 @@ To compute an address the following formula is used: `segment << 4 + address`
 Global Memory Offset:
 `[org 0x7c00]` global offset to all memory locations, usefull to offset every memory addres to inside the boot sector, which is stored at `0x7c00`
 
+### Segmentation / GDT (32-bit protected mode)
+In 32-bit land, segmentation is handled differently.
+The segment register (?) is an index in the GDT (Global Descriptor Table) to a specific SD (secment descriptor).
+
+A segment descriptor consists of 8 bytes:
+- 32 bits: start of the segment in memory
+- 20 bits: length of the segment
+- rest: random flags (flamour)
+
+Ok, makes sense, but the catch is, that these bytes are not layed out completly random, see this diagram:
+
+![](./images/segment_descriptor_layout.png)
+
+The first descriptor in the GDT has to be completly null (8 zero bytes).
+
+The simplest GDT configuration consists of only two segments (actually 3 because of the null descriptor), one for code and one for data. These segments can overlap and span the entire 4GB of addressable memory.
+
+There is also the GDT descriptor, that describes the GDT to the CPU. It consists of 6 Bytes:
+- GDT size (16 bits)
+- GDT address (32 bits)
 
 ### Instructions
 
@@ -116,4 +179,4 @@ Global Memory Offset:
 `dw` defines a word (two bytes / 16bits)
 
 `times` repeats an instruction at compile time
-`times 510 db 0` writes 510 `0` bytes
+`times 510 db 0` writes 510 `0` bytesstanislavs
