@@ -153,6 +153,62 @@ There is also the GDT descriptor, that describes the GDT to the CPU. It consists
 - GDT size (16 bits)
 - GDT address (32 bits)
 
+### Cross compiling (C)
+For some reason we need to build gcc ourself just to produce a standalone binary that can run on our custom OS. And because this is difficult and I could not get it to work, I used [this](https://github.com/lordmilko/i686-elf-tools). From it you can get:
+- Prebuild binaries
+- Build it yourself via the script
+- Build it in a docker container
+
+The one can add the location (in my case /usr/local/cross/i686-elf-tools-linux/bin) to the path. On can the access for example gcc via `0i686-elf-gcc`.
+
+### Building C
+Note: requires [](#cross-compiling-c).
+
+`i686-elf-gcc -ffreestanding -c function.c -o function.o`
+
+This produces an object file. It contains a bunch of extra information, other than just the assembly code. Also all the addresses are relative. But we want a raw binary with absolute addresses, for this, we need to use the linker:
+
+`i686-elf-ld -o function.bin -Ttext 0x0 --oformat binary function.o`
+
+This conversion of addresses looks like this for example: call <function X label> will become call 0x12345, where 0x12345 is the address where the actual isntruction of the function lie.
+
+The `-Ttext 0x0` is the offset. (ToDo figure out what this actually means)
+
+The `--oformat binary` denotes that we want a raw binary without any debug information etc.
+
+### Building
+- build c file via gcc - kernel.o
+- build kernel.asm to an object file - kernel_entry.o
+- link c kernel and assembly kernel together - kernel.bin
+- compile bootsector - bootsector.bin
+- concant bootsector and kernel - os-image.bin
+
+### Disassemble
+
+### Stackframe
+
+The code to setup a stackfram, found at the start of each function
+```
+push ebp
+mov ebp , esp
+```
+
+Leave a function:
+```
+leave
+ret
+```
+
+Allocate 16 bytes on the stack
+```
+sub esp,byte +0x10
+```
+
+Data, like strings are stored after the code, but a disassembler can't know that, it tries to interpret the bytes as instructions.
+
+
+Return value of a function is stored in eax.
+
 ### Instructions
 
 `int` execute interupt\
