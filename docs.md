@@ -13,6 +13,8 @@ James Molly Tutorial: https://web.archive.org/web/20160412174753/http://www.jame
 
 How Computers Works: https://homepage.cs.uri.edu/faculty/wolfe/book/Readings/Reading04.htm
 
+https://wiki.osdev.org/VGA_Hardware
+
 ## Assembly
 
 ### Printing to BIOS output

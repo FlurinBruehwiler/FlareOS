@@ -2,39 +2,49 @@
 void dummy_test_entrypoint() {
 }
 
-int strlen(char *s)
+typedef enum{false,true} bool;  
+
+typedef struct Vector2 {
+    int x;
+    int y;
+} Vector2;
+
+bool edgeFunction(Vector2 startLine, Vector2 endLIne, Vector2 point)
 {
-    int i = 0;
-    while(s[i] != 0)
-    {
-        i++;
-    }
-    return i;
+    return ((point.x - startLine.x) * (endLIne.y - startLine.y) - (point.y - startLine.y) * (endLIne.x - startLine.x) >= 0);
 }
 
-void strcpy(char* from, char* to)
+bool pointIsInsideTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 point)
 {
-    int fromLen = strlen(from);
-    for(int i = 0; i < fromLen; i++)
-    {
-        to[i] = from[i];
-    }
+    bool inside = true;
+    inside &= edgeFunction(v0, v1, point);
+    inside &= edgeFunction(v1, v2, point);
+    inside &= edgeFunction(v2, v0, point);
+
+    return inside;
 }
 
-void print(char* s, char color)
-{
-    char* video_memory = (char*) 0xb8000;
-    
-    int fromLen = strlen(s);
-    for(int i = 0; i < fromLen; i++)
-    {
-        video_memory[i * 2] = s[i];
-        video_memory[(i * 2) + 1] = color;
+void setPixel(int x, int y, char color) {
+    char *videoMemory = (char*)0xA0000;
+
+    // Calculate the offset for the pixel at (x, y)
+    int offset = (y * 320) + x;
+
+    // Set the color at the calculated offset
+    videoMemory[offset] = color;
+}
+
+void drawTriangle(Vector2 v0, Vector2 v1, Vector2 v2, char color){
+    for (int x = 0; x < 200; ++x) {
+        for (int y = 0; y < 200; ++y) {
+            if(pointIsInsideTriangle(v0, v1, v2, (Vector2){ x, y })){
+                setPixel(x, y, color);
+            }
+        }
     }
 }
 
 void main() {
-    char *string_to_display = "FlareOs 4 the win";
-    print(string_to_display, 0x5);
+    drawTriangle((Vector2){180, 20}, (Vector2){100, 100}, (Vector2){180, 180}, 14);
 }
 
