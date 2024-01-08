@@ -31,6 +31,24 @@ typedef struct Matrix {
     float m3, m7, m11, m15; // Matrix fourth row (4 components)
 } Matrix;
 
+float sinf(float x){
+    float result;
+    asm("fsin" : "=t"(result) : "0"(x));
+    return result;
+}
+
+float cosf(float x){
+    float result;
+    asm("fcos" : "=t"(result) : "0"(x));
+    return result;
+}
+
+float tan(float x){
+    float result;
+    asm("fptan" : "=t"(result) : "0"(x));
+    return result;
+}
+
 Matrix MatrixIdentity(void)
 {
     Matrix result = { 1.0f, 0.0f, 0.0f, 0.0f,
@@ -145,7 +163,7 @@ Vector3 Vector3Transform(Vector3 v, Matrix mat)
 //transformation matrix
 Matrix GetCameraViewMatrix(Camera3d camera){
     Matrix positionMatrix = MatrixTranslate(camera.position.x, camera.position.y, camera.position.z);
-    Matrix rotationMatrix = MatrixRotateXYZ(camera.rotation.x * DEG2RAD, camera.rotation.y * DEG2RAD, camera.rotation.z * DEG2RAD);
+    Matrix rotationMatrix = MatrixRotateXYZ((Vector3){ camera.rotation.x * DEG2RAD, camera.rotation.y * DEG2RAD, camera.rotation.z * DEG2RAD });
 
     Matrix viewMatrix = MatrixMultiply(positionMatrix, rotationMatrix);
 
@@ -160,21 +178,6 @@ Matrix WorldToScreenMatrix(Camera3d camera){
     Matrix viewMatrix = GetCameraViewMatrix(camera);
     Matrix projectionMatrix = GetCameraProjectionMatrix();
     return MatrixMultiply(viewMatrix, projectionMatrix);
-}
-
-Vector3 Vector3Transform(Vector3 v, Matrix mat)
-{
-    Vector3 result = { 0 };
-
-    float x = v.x;
-    float y = v.y;
-    float z = v.z;
-
-    result.x = mat.m0*x + mat.m4*y + mat.m8*z + mat.m12;
-    result.y = mat.m1*x + mat.m5*y + mat.m9*z + mat.m13;
-    result.z = mat.m2*x + mat.m6*y + mat.m10*z + mat.m14;
-
-    return result;
 }
 
 bool edgeFunction(Point2d startLine, Point2d endLIne, Point2d point)
@@ -217,7 +220,7 @@ int max(int a, int b)
 }
 
 //counter clockwise
-void drawTriangle(Vector3 v0, Vector3 v1, Vector3 v2, char color){
+void drawTriangle(Camera3d camera, Vector3 v0, Vector3 v1, Vector3 v2, char color){
     Matrix matrix = WorldToScreenMatrix(camera); 
 
     v0 = Vector3Transform(v0, matrix);
@@ -231,7 +234,7 @@ void drawTriangle(Vector3 v0, Vector3 v1, Vector3 v2, char color){
     
     for (int x = minX; x < maxX; ++x) {
         for (int y = minY; y < maxY; ++y) {
-            if(pointIsInsideTriangle(v0, v1, v2, (Point2d){ x, y })){
+            if(pointIsInsideTriangle((Point2d){ v0.x, v0.y }, (Point2d){ v1.x, v1.y }, (Point2d){ v2.x, v2.y }, (Point2d){ x, y })){
                 setPixel(x, y, color);
             }
         }
@@ -239,8 +242,10 @@ void drawTriangle(Vector3 v0, Vector3 v1, Vector3 v2, char color){
 }
 
 void main() {
-    drawTriangle((Point2d){20, 20}, (Point2d){20, 100}, (Point2d){100, 100}, 13);
-    drawTriangle((Point2d){100, 100}, (Point2d){100, 20}, (Point2d){20, 20}, 14);
+    Camera3d camera = {};
+
+    drawTriangle(camera, (Vector3){20, 20}, (Vector3){20, 100}, (Vector3){100, 100}, 13);
+    drawTriangle(camera, (Vector3){100, 100}, (Vector3){100, 20}, (Vector3){20, 20}, 14);
 }
 
 //very good article explaining matrix stuff: https://gamedev.stackexchange.com/questions/178643/the-view-matrix-finally-explained
