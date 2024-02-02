@@ -1,0 +1,2 @@
+#define MAX_ROWS 25
+#define VIDEO_MEMORY 0xb8000

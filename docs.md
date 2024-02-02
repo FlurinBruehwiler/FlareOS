@@ -250,3 +250,24 @@ test
 
 `times` repeats an instruction at compile time
 `times 510 db 0` writes 510 `0` bytesstanislavs
+
+### Inline Assembly
+
+use 'asm()' or '__asm__()'
+
+'__asm__("int %%dx, %%al" : "=a" (result) : "d" (port));'
+
+The first part is the actual instruction: 'int dx, al'
+
+The other two parts are parameters (out, in)
+
+'"=a" (result)': assign AL to result
+'"d" (port)': set dx to port
+
+
+Colons are used to differentiate sections
+
+"asm code" : output : input : clobbered registers
+
+multiple inputs can me chained with , 
+
